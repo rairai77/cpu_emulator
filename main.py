@@ -6,12 +6,12 @@ class I(Enum): # Enum for more convenient access, changes and reverse lookup bui
     VAL = auto() # HANDLED
     MEM = auto() # HANDLED
     MOV = auto() # HANDLED
-    ADD = auto()
+    ADD = auto() # HANDLED
     SUB = auto()
     MUL = auto()
     DIV = auto()
     CMP = auto()
-    JMP = auto()
+    JMP = auto() # HANDLED
     JMPE = auto()
     JMPG = auto()
     JMPL = auto()
@@ -99,6 +99,13 @@ class CPU:
                         self.r(dest)(src)
                 case I.JMP:
                     self._ip = self.load_src()
+                case I.ADD:
+                    src = self.load_src()
+                    dest = self.next_instruction()
+                    if (dest == I.MEM):
+                        self._memory[self.next_instruction()] += src
+                    else:
+                        self.r(dest)(self.r(dest)()+src)
                 case I.STOP:
                     stopped = True
 
@@ -111,6 +118,7 @@ if __name__ == "__main__":
         I.JMP, I.VAL, 19,
         I.STOP,
         I.MOV, R.G3, R.G4,
+        I.ADD, R.G3, R.G4,
         I.STOP
     ] + [0]*200
     c = CPU(memory)
