@@ -7,9 +7,9 @@ class I(Enum): # Enum for more convenient access, changes and reverse lookup bui
     MEM = auto() # HANDLED
     MOV = auto() # HANDLED
     ADD = auto() # HANDLED
-    SUB = auto()
-    MUL = auto()
-    DIV = auto()
+    SUB = auto() # HANDLED
+    MUL = auto() # HANDLED
+    DIV = auto() # HANDLED
     CMP = auto()
     JMP = auto() # HANDLED
     JMPE = auto()
@@ -106,6 +106,27 @@ class CPU:
                         self._memory[self.next_instruction()] += src
                     else:
                         self.r(dest)(self.r(dest)()+src)
+                case I.SUB:
+                    src = self.load_src()
+                    dest = self.next_instruction()
+                    if (dest == I.MEM):
+                        self._memory[self.next_instruction()] -= src
+                    else:
+                        self.r(dest)(self.r(dest)()-src)
+                case I.MUL:
+                    src = self.load_src()
+                    dest = self.next_instruction()
+                    if (dest == I.MEM):
+                        self._memory[self.next_instruction()] *= src
+                    else:
+                        self.r(dest)(self.r(dest)()*src)
+                case I.DIV:
+                    src = self.load_src()
+                    dest = self.next_instruction()
+                    if (dest == I.MEM):
+                        self._memory[self.next_instruction()] //= src
+                    else:
+                        self.r(dest)(self.r(dest)()//src)
                 case I.STOP:
                     stopped = True
 
