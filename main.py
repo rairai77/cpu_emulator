@@ -8,20 +8,21 @@ from typing import List
 from enum import Enum, auto
 
 class I(Enum): # Enum for more convenient access, changes and reverse lookup built in
-    VAL = auto() # HANDLED
-    MEM = auto() # HANDLED
-    MOV = auto() # HANDLED
-    ADD = auto() # HANDLED
-    SUB = auto() # HANDLED
-    MUL = auto() # HANDLED
-    DIV = auto() # HANDLED
-    CMP = auto() 
-    JMP = auto() # HANDLED
-    JMPE = auto()
-    JMPG = auto()
-    JMPL = auto()
-    OUT = auto() # HANDLED
-    STOP = auto() # HANDLED
+    VAL     = auto() # HANDLED
+    MEM     = auto() # HANDLED
+    MOV     = auto() # HANDLED
+    ADD     = auto() # HANDLED
+    SUB     = auto() # HANDLED
+    MUL     = auto() # HANDLED
+    DIV     = auto() # HANDLED
+    CMP     = auto() # HANDLED
+    JMP     = auto() # HANDLED
+    JMPE    = auto() # HANDLED
+    JMPG    = auto() # HANDLED    
+    JMPL    = auto() # HANDLED
+    OUT     = auto() # HANDLED
+    IN      = auto() # HANDLED
+    STOP    = auto() # HANDLED
     
     def __call__(self):
         return self.value
@@ -137,13 +138,26 @@ class CPU:
                     src = self.load_src()
                     output.append(src)
                 case I.CMP:
-                    pass
+                    self.set_flags(self.load_src(), self.load_src())
                 case I.JMPE:
-                    pass
+                    src = self.load_src()
+                    if (self._z):
+                        self._ip = src
                 case I.JMPG:
-                    pass
+                    src = self.load_src()
+                    if (self._gz):
+                        self._ip = src
                 case I.JMPL:
-                    pass
+                    src = self.load_src()
+                    if (self._lz):
+                        self._ip = src
+                case I.IN:
+                    src = input()
+                    dest = self.next_instruction()
+                    if (dest == I.MEM):
+                        self._memory[self.next_instruction()] = src
+                    else:
+                        self.r(dest)(src)
                 case I.STOP:
                     stopped = True
         return output
@@ -151,17 +165,14 @@ class CPU:
 
 if __name__ == "__main__":
     memory = [
-        I.MOV, I.VAL, 37, R.G2,     #3
-        I.MOV, R.G2, R.G1,          #6
-        I.MOV, R.G1, I.MEM, 100,    #10
-        I.MOV, I.MEM, 100, R.G3,    #14
-        I.JMP, I.VAL, 19,           #17
-        I.STOP,                     #18
-        I.MOV, R.G3, R.G4,          #21
-        I.ADD, R.G3, R.G4,          #24
-        I.OUT, R.G3,                #26
-        I.OUT, I.MEM, 100,          #29
-        I.STOP                      #30
+        I.IN, R.A1, # 1
+        I.IN, R.A2, # 3
+        I.CMP, R.A1, R.A2, #6
+        I.JMPG, I.VAL, 14, #9
+        I.OUT, I.VAL, -1, #12
+        I.STOP,           #13
+        I.OUT, I.VAL, 1,
+        I.STOP
     ] + [0]*200
     c = CPU(memory)
     output = c.exec()
