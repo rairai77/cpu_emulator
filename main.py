@@ -1,4 +1,9 @@
-# My first attempt at a CPU emulator in python
+# GAMEPLAN:
+# TODO: First, complete all instructions at a high level
+# TODO: Convert to some sort of encoding scheme to encode instructions into bytes instead of enums so it's more realistic!
+# TODO: Write an assembler
+# TODO: Create an ALU
+
 from typing import List
 from enum import Enum, auto
 
@@ -10,13 +15,13 @@ class I(Enum): # Enum for more convenient access, changes and reverse lookup bui
     SUB = auto() # HANDLED
     MUL = auto() # HANDLED
     DIV = auto() # HANDLED
-    CMP = auto()
+    CMP = auto() 
     JMP = auto() # HANDLED
     JMPE = auto()
     JMPG = auto()
     JMPL = auto()
-    OUT = auto()
-    STOP = auto()
+    OUT = auto() # HANDLED
+    STOP = auto() # HANDLED
     
     def __call__(self):
         return self.value
@@ -84,7 +89,8 @@ class CPU:
             src = self.r(src)()
         return src
 
-    def exec(self):
+    def exec(self) -> List[int]:
+        output = []
         self._ip = 0 
         stopped = False
         while(not stopped):
@@ -127,26 +133,42 @@ class CPU:
                         self._memory[self.next_instruction()] //= src
                     else:
                         self.r(dest)(self.r(dest)()//src)
+                case I.OUT:
+                    src = self.load_src()
+                    output.append(src)
+                case I.CMP:
+                    pass
+                case I.JMPE:
+                    pass
+                case I.JMPG:
+                    pass
+                case I.JMPL:
+                    pass
                 case I.STOP:
                     stopped = True
+        return output
+            
 
 if __name__ == "__main__":
     memory = [
-        I.MOV, I.VAL, 37, R.G2,
-        I.MOV, R.G2, R.G1,
-        I.MOV, R.G1, I.MEM, 30,
-        I.MOV, I.MEM, 30, R.G3,
-        I.JMP, I.VAL, 19,
-        I.STOP,
-        I.MOV, R.G3, R.G4,
-        I.ADD, R.G3, R.G4,
-        I.STOP
+        I.MOV, I.VAL, 37, R.G2,     #3
+        I.MOV, R.G2, R.G1,          #6
+        I.MOV, R.G1, I.MEM, 100,    #10
+        I.MOV, I.MEM, 100, R.G3,    #14
+        I.JMP, I.VAL, 19,           #17
+        I.STOP,                     #18
+        I.MOV, R.G3, R.G4,          #21
+        I.ADD, R.G3, R.G4,          #24
+        I.OUT, R.G3,                #26
+        I.OUT, I.MEM, 100,          #29
+        I.STOP                      #30
     ] + [0]*200
     c = CPU(memory)
-    c.exec()
-    for idx, register in enumerate(c._registers):
-        print(R(idx+1), register())
-    print(c._memory)
+    output = c.exec()
+    print(output)
+    # for idx, register in enumerate(c._registers):
+    #     print(R(idx+1), register())
+    # print(c._memory)
 
 
 
